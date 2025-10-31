@@ -9,10 +9,28 @@ const connectDB = async () => {
     }
 
     try {
-        const connectionInstance = await mongoose.connect(uri)
-        console.log(`\nMongoDB connected. DB HOST: ${connectionInstance.connection.host}`)
+        // Configure mongoose connection options
+        mongoose.set('strictQuery', true)
+        
+        const connectionInstance = await mongoose.connect(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            connectTimeoutMS: 10000, // 10 seconds timeout
+            maxPoolSize: 10,
+            socketTimeoutMS: 45000, // 45 seconds timeout
+            family: 4 // Use IPv4, skip trying IPv6
+        })
+
+        console.log(`\nMongoDB connected successfully`)
+        console.log(`DB HOST: ${connectionInstance.connection.host}`)
+        console.log(`DB Name: ${connectionInstance.connection.name}`)
     } catch (error) {
-        console.error('MONGODB connection is not working', error)
+        console.error('MongoDB connection failed:', error.message)
+        if (error.name === 'MongooseBufferError') {
+            console.error('Buffer error detected. Please check your MongoDB URI and network connection')
+        }
+        // Optionally force process to exit on connection failure
+        // process.exit(1)
     }
 }
 

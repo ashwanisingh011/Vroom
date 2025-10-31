@@ -9,4 +9,9 @@ router.post('/register', [
     body('fullname.firstName').isLength({min: 3}).withMessage('First name must be at least 3 characters long'),
 ], userController.registerUser);
 
+router.post('/login', [
+    body('email').isEmail().withMessage('Invalid Email'),
+    body('password').isLength({min: 8}).withMessage('Password must be at least 8 characters long'),
+], userController.loginUser)
+
 module.exports = router;

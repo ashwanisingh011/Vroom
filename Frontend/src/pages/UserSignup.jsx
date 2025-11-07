@@ -1,27 +1,55 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { UserDataContext } from "../context/UserContext";
 const UserSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstname, setFirstName] = useState("");
-  const [lastname, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [userData, setUserData] = useState("");
-  const submitHandler = (e) => {
-    e.preventDefault();
-    setUserData({
-      fullname: {
-        firstname: firstname,
-        lastname: lastname 
-      },
-      email: email,
 
-    })
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
+  const navigate = useNavigate();
+
+  const {user, setUser} = useContext(UserDataContext)
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      const newUser = {
+        // backend expects camelCase keys: firstName / lastName
+        fullname: {
+          firstName: firstName,
+          lastName: lastName,
+        },
+        email: email,
+        password: password,
+      };
+
+  const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+      if (response.status === 201) {
+        const data = response.data;
+        setUser(data.user);
+        // reset local fields
+        setEmail("");
+        setPassword("");
+        setFirstName("");
+        setLastName("");
+        navigate('/home');
+      }
+    } catch (err) {
+      console.error('Signup error', err);
+      // show validation errors if present
+      if (err.response && err.response.data && err.response.data.errors) {
+        // flatten or set to state for UI; for now log
+        console.log('Validation errors', err.response.data.errors);
+        alert(err.response.data.errors.map(e => e.msg).join('\n'));
+      } else {
+        alert('Signup failed. Please try again.');
+      }
+    }
   }
+  
 
   return (
     <div className="p-7 h-screen flex flex-col justify-between">
@@ -35,7 +63,7 @@ const UserSignup = () => {
           <div className="flex gap-4 mb-5">
             <input
             required
-            value={firstname}
+            value={firstName}
             onChange={(e)=>{
               setFirstName(e.target.value)
             }}
@@ -45,7 +73,7 @@ const UserSignup = () => {
           />
           <input
             required
-            value={lastname}
+            value={lastName}
             onChange={(e)=>{
               setLastName(e.target.value)
             }}
@@ -81,7 +109,7 @@ const UserSignup = () => {
           <p className="text-center">
             Already have a account?
             <Link to="/login" className="text-blue-600">
-              Login here
+              Create Account
             </Link>
           </p>
         </form>

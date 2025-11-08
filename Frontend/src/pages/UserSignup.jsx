@@ -30,7 +30,7 @@ const UserSignup = () => {
       if (response.status === 201) {
         const data = response.data;
         setUser(data.user);
-        // reset local fields
+       localStorage.setItem('token', data.token)
         setEmail("");
         setPassword("");
         setFirstName("");
